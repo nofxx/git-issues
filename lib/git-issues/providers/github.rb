@@ -56,6 +56,8 @@ class RepoProvider::Github
   def format_issues is
     Array(is).map do |i|
       i['description'] = i['body']
+      i['assignee'] = i['assignee'] ? i['assignee']['login'] : nil
+      i['labels'] = i['labels'].map { |l| l['name'] }
       i
     end
   end
