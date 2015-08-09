@@ -2,6 +2,7 @@ require 'git-issues/version'
 require 'git-issues/providers'
 
 require 'parseconfig'
+require 'rainbow'
 require 'zlog'
 
 class GitIssues
@@ -12,27 +13,27 @@ class GitIssues
     @providers = RepoProviders.new
   end
 
-  def gitReposFor path
-    p = File::expand_path(path)
-    git_path = File::join(p, '.git')
-    git_conf = File::join(git_path, 'config')
+  def gitReposFor uri
+    path = File.expand_path(uri)
+    git_path = File.join(path, '.git')
+    git_conf = File.join(git_path, 'config')
 
-    if not File::directory?(git_path)
-      Log.error "This is not a git repository (path: #{p})"
+    if not File.directory?(git_path)
+      Log.error "This is not a git repository (path: #{path})"
       return []
     end
 
-    if not File::file?(git_conf)
+    if not File.file?(git_conf)
       Log.error "Missing git configuration file (missing: #{git_conf})"
       return []
     end
 
     config = ParseConfig.new(git_conf)
 
-    remotes = config.params.keys.find_all{|i|i.start_with?('remote ')}
-    remote_repos = remotes.map{|r| config.params[r]['url']}
+    remotes = config.params.keys.find_all { |i| i.start_with?('remote ') }
+    remote_repos = remotes.map { |r| config.params[r]['url'] }
 
-    @providers.map_urls_to_provider( remote_repos )
+    @providers.map_urls_to_provider remote_repos
   end
 
 end
