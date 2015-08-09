@@ -53,7 +53,7 @@ class RepoProvider::Gitlab
         'description' => i.description,
         'state'       => i.state,
         'labels'      => i.labels,
-        'update'      => Date.parse(i.updated_at),
+        'updated_at'  => Date.parse(i.updated_at),
         'author'      => i.author.username,
         'assignee'    => assignee,
       }
