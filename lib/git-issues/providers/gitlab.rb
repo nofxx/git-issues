@@ -17,9 +17,9 @@ class RepoProvider::Gitlab
   def issues_list opts = {}
     issues = gitlab.issues gl_project_id
     # filter out closed issues if desired
-    issues = issues.find_all{|i| i.state != 'closed' } if not opts[:all]
+    issues = issues.find_all { |i| i.state != 'closed' } if !opts[:all]
     # return issues
-    format_issues( issues )
+    format_issues issues
   end
 
   def issue_create title, content
@@ -44,34 +44,42 @@ class RepoProvider::Gitlab
 
   private
 
-  def gl_project_id
-    @gl_project_id ||= begin
-        path = "#{repo['user']}/#{repo['repo']}"
-        p = gitlab.projects(per_page: 100).find{|p| p.path_with_namespace == path}
-        log.info "using project id = #{p.id} (#{p.path_with_namespace})" if not p.nil?
-        (p.nil?) ? nil : p.id
-      end
-  end
-
   def format_issues is
     Array(is).map do |i|
+      assignee = i.assignee && i.assignee.username
       {
         'number'      => i.iid,
         'title'       => i.title,
         'description' => i.description,
-        'state'       => i.state
+        'state'       => i.state,
+        'labels'      => i.labels,
+        'update'      => Date.parse(i.updated_at),
+        'author'      => i.author.username,
+        'assignee'    => assignee,
       }
     end
   end
 
-  def gitlab
-    init_gitlab if @gitlab.nil?
-    @gitlab
+  def find_project
+    path = "#{repo['user']}/#{repo['repo']}"
+    p = gitlab.projects(per_page: 100).find { |p| p.path_with_namespace == path}
+    log.info "using project id = #{p.id} (#{p.path_with_namespace})" if !p.nil?
+    (p.nil?) ? nil : p.id
   end
 
+  def gl_project_id
+    @gl_project_id ||= find_project
+  end
+
+  # Defaults to HTTPS
   def init_gitlab
     ot = oauth_token
-    @gitlab = Gitlab.client endpoint: "https://#{repo['host']}/api/v3", private_token: ot
+    url = "https://#{repo['host']}/api/v3"
+    Gitlab.client endpoint: url, private_token: ot
+  end
+
+  def gitlab
+    @gitlab ||= init_gitlab
   end
 
 end
