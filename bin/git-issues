@@ -21,18 +21,22 @@ class GitIssuesCLI < Thor
 
     issues = repo.issues_list o
     issues.sort_by{|i| i['number']}.reverse.each do |i|
-      print Rainbow("##{i['number']} ".rjust(7, ' ')).red
-      print Rainbow(" | #{i['state'][0,6]} | ").color(color_for_state(i['state']))
+      print Rainbow("##{i['number']}".rjust(5, ' ')).red
+      state, color = color_for_state(i['state'])
+      print Rainbow(" |  #{state}  ").color(color)
       print Rainbow(i['title'] + ' ') #.color('#888888')
 
-      print Rainbow('@' + i['assignee']).color('#888888') if i['assignee']
+      print(Rainbow('@' + i['assignee']).color('#888888')) if i['assignee']
       if i['labels'] && !i['labels'].empty?
         print Rainbow(" [" + i['labels'].join(' ') + "] ").black
       end
-      puts Rainbow(i['update'].strftime('%d/%b/%y')).black
-      if not options.short
-        puts "      %s" % i['description'] if i['description'].to_s.length > 0
-        puts Rainbow('-' * 29).black
+      print Rainbow(i['update'].strftime('%d/%b/%y')).black  if i['update']
+      puts
+      if !options.short
+        return unless i['description'].to_s.length > 0
+        puts
+        puts i['description']
+        puts Rainbow('-' * 49).black
       end
     end
     nil
@@ -73,9 +77,10 @@ class GitIssuesCLI < Thor
 
   def color_for_state state
     case state
-    when 'opened' then :yellow
-    when 'reopened' then :red
-    when 'closed' then :green
+    when /^open/ then ['☐', :yellow]
+    when /^reop/ then ['☑', :red]
+    when /^clos/ then ['☑', :green]
+    else ['☐', :white]
     end
   end
 
