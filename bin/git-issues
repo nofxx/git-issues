@@ -22,15 +22,28 @@ class GitIssuesCLI < Thor
     issues = repo.issues_list o
     issues.sort_by{|i| i['number']}.reverse.each do |i|
       print Rainbow("##{i['number']}".rjust(5, ' ')).red
+
+      # | [x] Check and marks
       state, color = color_for_state(i['state'])
-      print Rainbow(" |  #{state}  ").color(color)
+      print Rainbow(" | #{state}  ").color(color)
+
+      # Title
       print Rainbow(i['title'] + ' ') #.color('#888888')
 
-      print(Rainbow('@' + i['assignee']).color('#888888')) if i['assignee']
+      # Tags/Labels
       if i['labels'] && !i['labels'].empty?
-        print Rainbow(" [" + i['labels'].join(' ') + "] ").black
+        print Rainbow("[" + i['labels'].join(' ') + "] ").color('#888888')
       end
-      print Rainbow(i['update'].strftime('%d/%b/%y')).black  if i['update']
+
+      # @Assignee
+      if i['assignee']
+        print Rainbow("@#{i['assignee']} ").color('#888888')
+      else
+        print Rainbow("!#{i['author']} ").color(:yellow)
+      end
+
+      # Timestamp
+      print Rainbow(i['updated_at'].strftime('%d/%b')).black if i['updated_at']
       puts
       if !options.short
         return unless i['description'].to_s.length > 0
