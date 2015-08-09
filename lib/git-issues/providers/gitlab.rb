@@ -47,7 +47,7 @@ class RepoProvider::Gitlab
   def gl_project_id
     @gl_project_id ||= begin
         path = "#{repo['user']}/#{repo['repo']}"
-        p = gitlab.projects.find{|p| p.path_with_namespace == path}
+        p = gitlab.projects(per_page: 100).find{|p| p.path_with_namespace == path}
         log.info "using project id = #{p.id} (#{p.path_with_namespace})" if not p.nil?
         (p.nil?) ? nil : p.id
       end
@@ -71,7 +71,7 @@ class RepoProvider::Gitlab
 
   def init_gitlab
     ot = oauth_token
-    @gitlab = Gitlab.client endpoint: "http://#{repo['host']}/api/v3", private_token: ot
+    @gitlab = Gitlab.client endpoint: "https://#{repo['host']}/api/v3", private_token: ot
   end
 
 end
