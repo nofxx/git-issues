@@ -6,13 +6,13 @@ require 'octokit'
 class RepoProvider::Github
 
   URL_PATTERNS = [
-    /^(ssh:\/\/)?git@github.com:(?<user>[^\/]+)\/(?<repo>.+)(\.git)?$/,
-    /^https:\/\/github.com\/(?<user>[^\/]+)\/(?<repo>.+)(\.git)?$/
+    /^(ssh:\/\/)?git@github.com:(?<user>[^\/]+)\/(?<repo>.+?)(\.git)?$/,
+    /^https:\/\/github.com\/(?<user>[^\/]+)\/(?<repo>.+?)(\.git)?$/
   ]
 
   def self.get_repo url
     # find the url pattern that matches the url
-    URL_PATTERNS.map{|p| p.match url }.compact.first
+    URL_PATTERNS.map { |p| p.match url }.compact.first
   end
 
   def issues_list opts = {}
